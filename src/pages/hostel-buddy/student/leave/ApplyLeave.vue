@@ -1,4 +1,4 @@
-<template>
+   <template>
     <Navbar_Student/><div class ="Theme">
   <div class="leave-application-container">
     <div class="cards-wrapper">
@@ -94,6 +94,10 @@
             </div>
             <div class="leave-reason">{{ leave.reason }}</div>
             <div class="leave-contact">Contact: {{ leave.emergencyContact }}</div>
+            <div v-if="leave.status === 'Approved' || leave.status === 'Rejected'" class="leave-warden">
+              <strong>{{ leave.status }} by:</strong>   {{ leave.wardenName && leave.wardenName.trim() ? leave.wardenName : 'Unknown' }}
+            </div>
+
             <div class="leave-actions" v-if="leave.status === 'Pending'">
               <button class="cancel-btn" @click="cancelLeave(leave.id)">Cancel</button>
             </div>
@@ -123,19 +127,19 @@ export default {
   data() {
     return {
       today: new Date().toISOString().split('T')[0],
-       user: {
-          fullName: '',
-          roomNumber: ''
-       },
-        leaveForm: {
+      user: {
+        fullName: '',
+        roomNumber: ''
+      },
+      leaveForm: {
         fromDate: '',
         toDate: '',
         reason: '',
         emergencyContact: '',
-        studentName: '',     
-        roomNumber: '' 
+        studentName: '',
+        roomNumber: ''
       },
-      leaveHistory: [] // initialized empty, will load from backend
+      leaveHistory: []
     };
   },
   mounted() {
@@ -144,7 +148,7 @@ export default {
   methods: {
     fetchLeaveHistory() {
       const token = localStorage.getItem('token');
-      axios.get('/api/v1/leave/history', {
+      axios.get('http://localhost:5000/api/v1/leave/history', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -152,13 +156,14 @@ export default {
       .then(res => {
         this.leaveHistory = res.data.map(leave => ({
           id: leave._id,
-          StudentName:leave.fullName,
-          RoomNo:leave.roomNumber,
+          studentName: leave.fullName,
+          roomNumber: leave.roomNumber,
           fromDate: leave.startDate,
           toDate: leave.endDate,
           reason: leave.reason,
           emergencyContact: leave.emergencyContact,
-          status: leave.status.charAt(0).toUpperCase() + leave.status.slice(1)
+          status: leave.status.charAt(0).toUpperCase() + leave.status.slice(1),
+          wardenName: leave.wardenName || '' 
         }));
       })
       .catch(err => {
@@ -175,9 +180,9 @@ export default {
         return;
       }
 
-      axios.post('/api/v1/leave/apply', {
-         studentName: this.leaveForm.fullName,
-         roomNumber: this.leaveForm.roomNumber,
+      axios.post('http://localhost:5000/api/v1/leave/apply', {
+        studentName: this.leaveForm.studentName,
+        roomNumber: this.leaveForm.roomNumber,
         startDate: this.leaveForm.fromDate,
         endDate: this.leaveForm.toDate,
         reason: this.leaveForm.reason,
@@ -198,12 +203,13 @@ export default {
           status: newLeave.status.charAt(0).toUpperCase() + newLeave.status.slice(1)
         });
 
-        // Clear form
         this.leaveForm = {
           fromDate: '',
           toDate: '',
           reason: '',
-          emergencyContact: ''
+          emergencyContact: '',
+          studentName: '',
+          roomNumber: ''
         };
 
         alert('Leave application submitted successfully!');
@@ -213,34 +219,31 @@ export default {
         alert(error.response?.data?.message || 'Something went wrong. Please try again.');
       });
     },
- 
- cancelLeave(id) {
-  const token = localStorage.getItem('token');
 
-  if (!token) {
-    alert('You must be logged in to cancel a leave.');
-    return;
-  }
+    cancelLeave(id) {
+      const token = localStorage.getItem('token');
 
-  if (confirm('Are you sure you want to cancel this leave application?')) {
-    axios.delete(`/api/v1/leave/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
+      if (!token) {
+        alert('You must be logged in to cancel a leave.');
+        return;
       }
-    })
-    .then(() => {
-      this.leaveHistory = this.leaveHistory.filter(leave => leave.id !== id);
-      alert('Leave application cancelled successfully');
-    })
-    .catch(err => {
-      console.error("Cancel error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || 'Failed to cancel leave');
-    });
-  }
-},
 
+      axios.delete(`http://localhost:5000/api/v1/leave/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      .then(() => {
+        this.leaveHistory = this.leaveHistory.filter(leave => leave.id !== id);
+        alert('Leave application cancelled successfully');
+      })
+      .catch(err => {
+        console.error("Cancel error:", err.response?.data || err.message);
+        alert(err.response?.data?.message || 'Failed to cancel leave');
+      });
+    },
 
-   formatDate(dateString) {
+    formatDate(dateString) {
       const options = { year: 'numeric', month: 'short', day: 'numeric' };
       return new Date(dateString).toLocaleDateString('en-US', options);
     },
@@ -254,47 +257,46 @@ export default {
 </script>
 
 
+
 <style scoped>
 .leave-application-container {
-  max-width: 1200px;
+  min-width: 1200px;
   margin: 0 auto;
   padding: 30px;
-  /* margin-top: 70px; */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding-top: 40px;
+  padding-bottom: 60px;
 }
 
 .cards-wrapper {
   display: flex;
   gap: 20px;
+  margin-bottom: 10px;
 }
 
 .form-card {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-  padding: 0px;
-}
-
-.form-card {
+  padding: 5px;
   flex: 1;
-  width:1000px;
-  padding: 20px;
 }
 
 .history-card {
   width: 450px;
-  padding-top:60px;
+  border-radius: 12px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+  padding: 25px;
 }
 
 h1 {
   color: #1BBC9B;
-  text-align: left;
-  margin-bottom: 25px;
+  text-align: center;
+  margin-bottom: 30px;
   font-size: 28px;
   padding-bottom: 10px;
   border-bottom: 2px solid #1BBC9B;
-  text-align: center;
- margin-top: 80px;
+  padding-top: 10px;
 }
 
 h2 {
@@ -307,6 +309,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 25px;
+  padding-left: 20px;
 }
 
 .form-group {
@@ -343,7 +346,8 @@ textarea {
 .submit-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 15px;
+  margin-top: 25px;
+  margin-bottom: 20px;
 }
 
 .submit-btn {
@@ -371,7 +375,7 @@ textarea {
   max-height: 600px;
   overflow-y: auto;
   padding-right: 10px;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 
 .history-item {
@@ -473,20 +477,30 @@ textarea {
 }
 
 .Theme {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-
-padding: 3rem 2rem;
+  align-items: flex-start;
+  padding: 2rem;
   background: linear-gradient(to bottom, 
     #e0f8f6 0%, 
     #f0fdfc 30%, 
     #ffffff 50%, 
     #f0fdfc 70%, 
     #e0f8f6 100%);
- position: relative;
-  overflow: hidden;}
+  position: relative;
+  overflow: auto;
+}
+
+footer {
+  margin-top: 40px;
+  padding: 20px 0;
+  text-align: center;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
 @media (max-width: 992px) {
   .cards-wrapper {
     flex-direction: column;
@@ -499,13 +513,27 @@ padding: 3rem 2rem;
 
 @media (max-width: 768px) {
   .leave-application-container {
-    padding: 20px;
+    padding: 20px 15px;
   }
   
   .form-card, .history-card {
-    padding: 20px;
+    padding: 20px 15px;
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    font-size: 20px;
   }
 }
 
- 
+.leave-warden {
+  color: #333;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
 </style>
