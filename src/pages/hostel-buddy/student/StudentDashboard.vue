@@ -1,9 +1,9 @@
-<template>
+ <template>
   <div class="student-dashboard">
-    <!-- Fixed Header -->
+    <!-- Header -->
     <header class="dashboard-header">
       <div class="header-left">
-        <h1>Student Dashboard</h1>
+       <h1>Welcome, {{ studentName }}</h1>
       </div>
       <div class="header-right">
         <div class="profile-dropdown">
@@ -16,9 +16,7 @@
             <router-link to="/student-profile" @click="showDropdown = false">
               My Profile
             </router-link>
-            <a href="#" @click.prevent="logout">
-              Logout
-            </a>
+            <a href="#" @click.prevent="logout">Logout</a>
           </div>
         </div>
         <button class="hamburger-btn" @click="toggleMobileMenu">
@@ -27,7 +25,7 @@
       </div>
     </header>
 
-    <!-- Mobile Menu Overlay -->
+    <!-- Mobile Menu -->
     <div v-if="showMobileMenu" class="mobile-menu-overlay" @click="toggleMobileMenu">
       <div class="mobile-menu-content" @click.stop>
         <div class="mobile-menu-header">
@@ -69,13 +67,25 @@
             <i class="fas fa-comment-alt"></i>
             <span>Meal Feedback</span>
           </div>
+          <div class="mobile-menu-item" @click="navigateTo('/fee-details')">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Fee Details</span>
+          </div>
+          <div class="mobile-menu-item" @click="navigateTo('/announcements')">
+            <i class="fas fa-bullhorn"></i>
+            <span>Announcements</span>
+          </div>
+          <div class="mobile-menu-item" @click="navigateTo('/rules')">
+            <i class="fas fa-edit"></i>
+            <span>Rules and Regulations</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Scrollable Content -->
+    <!-- Main Content -->
     <main class="dashboard-content">
-      <!-- Key Metrics -->
+      <!-- Metrics Cards -->
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-content">
@@ -85,9 +95,7 @@
               <i class="fas fa-bed"></i> Shared (2 students)
             </p>
           </div>
-          <div class="metric-icon">
-            <i class="fas fa-home"></i>
-          </div>
+          <div class="metric-icon"><i class="fas fa-home"></i></div>
         </div>
         <div class="metric-card">
           <div class="metric-content">
@@ -97,9 +105,7 @@
               <i class="fas fa-calendar-check"></i> Next due: 10 Aug
             </p>
           </div>
-          <div class="metric-icon">
-            <i class="fas fa-rupee-sign"></i>
-          </div>
+          <div class="metric-icon"><i class="fas fa-rupee-sign"></i></div>
         </div>
         <div class="metric-card">
           <div class="metric-content">
@@ -109,59 +115,69 @@
               <i class="fas fa-utensils"></i> 100% attendance
             </p>
           </div>
-          <div class="metric-icon">
-            <i class="fas fa-utensils"></i>
-          </div>
+          <div class="metric-icon"><i class="fas fa-utensils"></i></div>
         </div>
-        <div class="metric-card">
-          <div class="metric-content">
-            <h3>Pending Leaves</h3>
-            <p class="metric-value">2</p>
-            <p class="metric-change">
-              <i class="fas fa-clock"></i> 1 approved, 1 pending
-            </p>
-          </div>
-          <div class="metric-icon">
-            <i class="fas fa-calendar-alt"></i>
-          </div>
-        </div>
+         <div class="metric-card">
+  <div class="metric-content">
+    <h3>Total Leaves</h3>
+    <p class="metric-value">{{ pendingLeavesCount + approvedLeavesCount }}</p>
+    <p class="metric-change">
+      <i class="fas fa-clock"></i>
+      {{ approvedLeavesCount }} approved, {{ pendingLeavesCount }} pending
+    </p>
+  </div>
+  <div class="metric-icon"><i class="fas fa-calendar-alt"></i></div>
+</div>
+
       </div>
 
-      <!-- Recent Notices Section -->
+      <!-- ✅ Recent Notices Section -->
       <div class="dashboard-section">
         <h2>Recent Notices</h2>
-        <div class="activity-list">
-          <div class="activity-item">
-            <div class="activity-icon announcement">
-              <i class="fas fa-bullhorn"></i>
-            </div>
-            <div class="activity-content">
-              <p>Water supply will be interrupted tomorrow from 9AM to 5PM for maintenance</p>
-              <span class="activity-time">2 hours ago</span>
+
+        <div v-if="loadingNotices" class="activity-list">
+          <p>Loading announcements...</p>
+        </div>
+
+        <div v-else>
+          <div v-if="recentAnnouncements.length === 0" class="activity-list">
+            <p>No announcements yet</p>
+          </div>
+
+          <div v-else class="activity-list">
+            <div v-for="notice in recentAnnouncements" :key="notice.id" class="activity-item">
+              <div class="activity-icon announcement">
+                <i class="fas fa-bullhorn"></i>
+              </div>
+              <div class="activity-content">
+                <!-- Title -->
+                <p style="margin-bottom: 4px; font-weight: 600; color: #333;">
+                  {{ notice.title }}
+                </p>
+                
+                <!-- Description -->
+                <p style="margin: 0; font-size: 0.9rem; color: #555;">
+                  {{ notice.description }}
+                </p>
+
+                <!-- Posted By & Time -->
+                <small style="display: block; margin-top: 6px; color: #777;">
+                  Posted by <strong>{{ notice.postedBy || 'Warden' }}</strong> • {{ formatTime(notice.createdAt) }}
+                </small>
+              </div>
             </div>
           </div>
-          <div class="activity-item">
-            <div class="activity-icon event">
-              <i class="fas fa-calendar"></i>
-            </div>
-            <div class="activity-content">
-              <p>Hostel cultural fest registrations open until Friday</p>
-              <span class="activity-time">1 day ago</span>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon notice">
-              <i class="fas fa-exclamation-circle"></i>
-            </div>
-            <div class="activity-content">
-              <p>New WiFi password available at admin office</p>
-              <span class="activity-time">3 days ago</span>
-            </div>
+
+          <!-- View All Announcements -->
+          <div style="text-align: right; margin-top: 10px;">
+            <button class="view-all-btn" @click="navigateTo('/announcements')">
+              View All Announcements →
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Quick Access Cards -->
+      <!-- Quick Actions Section -->
       <div class="dashboard-section">
         <h2>Quick Actions</h2>
         <div class="quick-access-grid">
@@ -205,53 +221,126 @@
             <h3>Meal Feedback</h3>
             <p>Provide feedback on meals</p>
           </div>
+          <!-- ✅ Announcements Card -->
+          <div class="quick-access-card" @click="navigateTo('/announcements')">
+            <i class="fas fa-bullhorn"></i>
+            <h3>Announcements</h3>
+            <p>View all hostel announcements</p>
+          </div>
+          <div class="quick-access-card" @click="navigateTo('/fee-details')">
+            <i class="fas fa-money-bill-wave"></i>
+            <h3>Fee Details</h3>
+            <p>View all hostel fee details</p>
+          </div>
         </div>
       </div>
     </main>
 
-    <!-- Fixed Footer -->
     <Footer />
   </div>
 </template>
 
+
 <script>
-import Footer from '@/components/Footer.vue'
+import axios from "axios";
+import Footer from "@/components/Footer.vue";
+
 export default {
-  name: 'StudentDashboard',
-  components: {
-    Footer
-  },
+  name: "StudentDashboard",
+  components: { Footer },
   data() {
     return {
       showDropdown: false,
-      showMobileMenu: false
+      showMobileMenu: false,
+      studentName: '',
+      showProfileDropdown: false,
+      announcements: [],
+      loadingNotices: true,
+      pendingLeavesCount: 0,
+      approvedLeavesCount: 0,
+    };
+  },
+  computed: {
+    // ✅ Only show latest 3 announcements
+    recentAnnouncements() {
+      return this.announcements.slice(0, 3);
     }
   },
+  mounted() {
+    const userData = localStorage.getItem('userProfile');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        this.studentName = user.fullName || user.name || '';
+      } catch (e) {
+        console.error("Failed to parse userProfile:", e);
+      }
+    }
+    this.fetchAnnouncements();
+    this.fetchLeaveStats();
+  },
+
   methods: {
     toggleProfileDropdown() {
-      this.showDropdown = !this.showDropdown
-      if (this.showDropdown) {
-        this.showMobileMenu = false
-      }
+      this.showDropdown = !this.showDropdown;
+      if (this.showDropdown) this.showMobileMenu = false;
     },
     toggleMobileMenu() {
-      this.showMobileMenu = !this.showMobileMenu
-      if (this.showMobileMenu) {
-        this.showDropdown = false
-      }
+      this.showMobileMenu = !this.showMobileMenu;
+      if (this.showMobileMenu) this.showDropdown = false;
     },
     logout() {
-      console.log("Logging out...")
-      this.showDropdown = false
-      this.$router.push('/login')
+      this.showDropdown = false;
+      this.$router.push("/hostel-buddy");
     },
     navigateTo(route) {
-      this.$router.push(route)
-      this.showMobileMenu = false
+      this.$router.push(route);
+      this.showMobileMenu = false;
+    },
+
+    async fetchAnnouncements() {
+      try {
+        const res = await axios.get("/api/announcements");
+        this.announcements = res.data || [];
+      } catch (err) {
+        console.error("Error fetching notices:", err);
+        this.announcements = [];
+      } finally {
+        this.loadingNotices = false;
+      }
+    },
+
+    formatTime(dateStr) {
+      if (!dateStr) return "";
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000 / 60);
+      if (diff < 60) return `${diff} min ago`;
+      const hours = Math.floor(diff / 60);
+      if (hours < 24) return `${hours} hours ago`;
+      const days = Math.floor(hours / 24);
+      return `${days} days ago`;
+    },
+   async fetchLeaveStats() {
+    try {
+      const response = await axios.get('/api/v1/leave/student-stats', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      this.pendingLeavesCount = response.data.pending;
+      this.approvedLeavesCount = response.data.approved;
+      console.log("Approved:", this.approvedLeavesCount, "Pending:", this.pendingLeavesCount);
+    } catch (error) {
+      console.error("Failed to fetch student leave stats", error);
     }
+  },
+
   }
-}
+};
 </script>
+
 
 <style scoped>
 .student-dashboard {
@@ -271,8 +360,8 @@ export default {
   padding: 1rem 2rem;
   background: linear-gradient(135deg, #1BBC9B, #16a085);
   color: white;
-  height: 80px;
-  position: fixed;
+  height: 90px;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -314,6 +403,46 @@ export default {
 
 .hamburger-btn:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+.theme-toggle-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.theme-toggle-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* DARK MODE */
+.student-dashboard.dark {
+  background-color: #1A1C2D;
+  color: #f1f1f1;
+}
+.student-dashboard.dark .dashboard-header {
+  background: #141625;
+}
+.student-dashboard.dark .metric-card,
+.student-dashboard.dark .dashboard-section,
+.student-dashboard.dark .quick-access-card {
+  background: #222437;
+  color: #f1f1f1;
+  box-shadow: none;
+}
+.student-dashboard.dark .activity-item {
+  border-bottom: 1px solid #333;
+}
+.student-dashboard.dark .quick-access-card h3 {
+  color: #44D4C5;
+}
+.student-dashboard.dark .metric-value {
+  color: #44D4C5;
 }
 
 /* Mobile Menu Styles */
@@ -457,7 +586,7 @@ export default {
 /* Dashboard Content */
 .dashboard-content {
   flex: 1;
-  margin-top: 70px;
+  margin-top: 20px;
   margin-bottom: 60px;
   padding: 1.5rem;
   overflow-y: auto;
@@ -628,7 +757,17 @@ export default {
   font-size: 0.9rem;
   margin: 0;
 }
-
+.view-all-btn {
+  background: none;
+  border: none;
+  color: #1BBC9B;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.view-all-btn:hover {
+  text-decoration: underline;
+}
 /* Animations */
 @keyframes slideInRight {
   from {
