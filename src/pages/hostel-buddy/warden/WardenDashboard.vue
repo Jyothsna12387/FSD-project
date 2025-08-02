@@ -1,9 +1,9 @@
-<template>
+ <template>
   <div class="warden-dashboard">
     <!-- Fixed Header -->
     <header class="dashboard-header">
       <div class="header-left">
-        <h1>Warden Dashboard</h1>
+        <h1>Welcome, {{ wardenName }}</h1>
       </div>
       <div class="header-right">
         <div class="profile-dropdown">
@@ -151,6 +151,8 @@ export default {
     return {
       showDropdown: false,
       showMobileMenu: false,
+      wardenName: '',
+      showProfileDropdown: false,
       metricList: [
         {
           title: 'Total Students',
@@ -166,13 +168,11 @@ export default {
           icon: 'fas fa-bed',
           metricIcon: 'fas fa-home'
         },
-        {
-          title: 'Pending Complaints',
-          value: 8,
-          change: '1.5 avg. days',
-          icon: 'fas fa-clock',
-          metricIcon: 'fas fa-clipboard-list'
-        },
+         {
+    title: 'Pending Complaints',
+    value: 0, // will be updated via API
+    metricIcon: 'fas fa-clipboard-list'
+  },
         {
           title: 'Fee Defaulters',
           value: 14,
@@ -212,7 +212,7 @@ export default {
           title: 'Announcements',
           icon: 'fas fa-bullhorn',
           description: 'Make new announcements to students',
-          route: '/announcements',
+          route: '/announcement-form',
           bgColor: '#e3f2fd'
         },
         {
@@ -288,6 +288,29 @@ export default {
       ]
     }
   },
+  mounted() {
+    const userData = localStorage.getItem("userProfile");
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        this.wardenName = user.fullName || user.name || "";
+      } catch (error) {
+        console.error("Invalid user data in localStorage");
+      }
+    };
+    // Fetch pending complaints count
+  fetch('http://localhost:5000/api/v1/complaints/pending-count')
+    .then(response => response.json())
+    .then(data => {
+      const pendingCard = this.metricList.find(metric => metric.title === 'Pending Complaints');
+      if (pendingCard) {
+        pendingCard.value = data.pendingCount;
+      }
+    })
+    .catch(err => {
+      console.error('Failed to fetch pending complaints count', err);
+    });
+  },
   methods: {
     toggleProfileDropdown() {
       this.showDropdown = !this.showDropdown
@@ -333,8 +356,8 @@ export default {
   padding: 1rem 2rem;
   background: linear-gradient(135deg, #1BBC9B, #16a085);
   color: white;
-  height: 70px;
-  position: fixed;
+  height: 90px;
+  position: relative;
   top: 0;
   left: 0;
   right: 0;
@@ -519,7 +542,7 @@ export default {
 /* Dashboard Content */
 .dashboard-content {
   flex: 1;
-  margin-top: 80px;
+  margin-top: 20px;
   margin-bottom: 60px;
   padding: 1.5rem;
   overflow-y: auto;
