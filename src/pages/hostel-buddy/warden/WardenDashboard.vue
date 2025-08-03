@@ -1,4 +1,4 @@
- <template>
+  <template>
   <div class="warden-dashboard">
     <!-- Fixed Header -->
     <header class="dashboard-header">
@@ -16,7 +16,7 @@
             <router-link to="/admin-profile" @click="showDropdown = false">
               <i class="fas fa-user"></i> My Profile
             </router-link>
-            <a href="#" @click.prevent="logout">
+            <a href="/" @click.prevent="logout">
               <i class="fas fa-sign-out-alt"></i> Logout
             </a>
           </div>
@@ -37,14 +37,34 @@
           </button>
         </div>
         <div class="mobile-menu-items">
-          <div class="mobile-menu-item" @click="navigateTo('/announcements')">
+          <div class="mobile-menu-item" @click="navigateTo('/announcement-form')">
             <i class="fas fa-bullhorn"></i>
             <span>Announcements</span>
+          </div>
+         <div class="mobile-menu-item" @click="navigateTo('/room-assignment')">
+            <i class="fas fa-home"></i>
+            <span>Room Allocation</span>
           </div>
           <div class="mobile-menu-item" @click="navigateTo('/room-change')">
             <i class="fas fa-exchange-alt"></i>
             <span>Change Rooms</span>
           </div>
+           <div class="mobile-menu-item" @click="navigateTo('/hostel-occupancy')">
+            <i class="fas fa-bed"></i>
+            <span>Hostel Occupancy</span>
+          </div>
+
+          <div class="mobile-menu-item" @click="navigateTo('/leave-approval')">
+            <i class="fas fa-calendar-check"></i>
+            <span>Leave Approval</span>
+          </div> 
+          <div class="mobile-menu-item" @click="navigateTo('/complaint-management')">
+            <i class="fas fa-tools"></i>
+            <span>View Complaints</span>
+          </div>
+          
+          
+
           <div class="mobile-menu-item" @click="navigateTo('/menu-update')">
             <i class="fas fa-utensils"></i>
             <span>Update Menu</span>
@@ -53,33 +73,21 @@
             <i class="fas fa-rupee-sign"></i>
             <span>Fee Management</span>
           </div>
-          <div class="mobile-menu-item" @click="navigateTo('/complaint-management')">
-            <i class="fas fa-tools"></i>
-            <span>View Complaints</span>
-          </div>
-          <div class="mobile-menu-item" @click="navigateTo('/payment-tracking')">
+          
+          <!-- <div class="mobile-menu-item" @click="navigateTo('/payment-tracking')">
             <i class="fas fa-file-invoice"></i>
             <span>Fee Reports</span>
-          </div>
-          <div class="mobile-menu-item" @click="navigateTo('/hostel-occupancy')">
-            <i class="fas fa-bed"></i>
-            <span>Hostel Occupancy</span>
-          </div>
-          <div class="mobile-menu-item" @click="navigateTo('/room-assignment')">
-            <i class="fas fa-home"></i>
-            <span>Room Allocation</span>
-          </div>
-          <div class="mobile-menu-item" @click="navigateTo('/student-management')">
+          </div> -->
+         
+           
+          <!-- <div class="mobile-menu-item" @click="navigateTo('/student-management')">
             <i class="fas fa-user-graduate"></i>
             <span>Student Details</span>
-          </div>
-          <div class="mobile-menu-item" @click="navigateTo('/leave-approval')">
-            <i class="fas fa-calendar-check"></i>
-            <span>Leave Approval</span>
-          </div>
+          </div> -->
+         
           <div class="mobile-menu-item" @click="navigateTo('/rules')">
             <i class="fas fa-clipboard-list"></i>
-            <span>Edit Rules</span>
+            <span>Rules</span>
           </div>
         </div>
       </div>
@@ -222,6 +230,20 @@ export default {
           route: '/room-assignment',
           bgColor: '#e8f5e9'
         },
+         {
+          title: 'Change Rooms',
+          icon: 'fas fa-exchange-alt',
+          description: 'Process room change requests',
+          route: '/room-change',
+          bgColor: '#e0f2f1'
+        },
+         {
+          title: 'Hostel Occupancy',
+          icon: 'fas fa-bed',
+          description: 'View current hostel occupancy',
+          route: '/hostel-occupancy',
+          bgColor: '#fce4ec'
+        },
         {
           title: 'Leave Approval',
           icon: 'fas fa-calendar-check',
@@ -236,42 +258,7 @@ export default {
           route: '/complaint-management',
           bgColor: '#f3e5f5'
         },
-        {
-          title: 'Fee Management',
-          icon: 'fas fa-rupee-sign',
-          description: 'Manage student fee payments',
-          route: '/fee-management',
-          bgColor: '#e0f7fa'
-        },
-        {
-          title: 'Student Details',
-          icon: 'fas fa-user-graduate',
-          description: 'View and manage student records',
-          route: '/student-management',
-          bgColor: '#f1f8e9'
-        },
-        {
-          title: 'Hostel Occupancy',
-          icon: 'fas fa-bed',
-          description: 'View current hostel occupancy',
-          route: '/hostel-occupancy',
-          bgColor: '#fce4ec'
-        },
-        {
-          title: 'Fee Reports',
-          icon: 'fas fa-file-invoice',
-          description: 'Generate fee payment reports',
-          route: '/payment-tracking',
-          bgColor: '#e8eaf6'
-        },
-        {
-          title: 'Change Rooms',
-          icon: 'fas fa-exchange-alt',
-          description: 'Process room change requests',
-          route: '/room-change',
-          bgColor: '#e0f2f1'
-        },
-        {
+         {
           title: 'Update Menu',
           icon: 'fas fa-utensils',
           description: 'Update hostel food menu',
@@ -279,7 +266,14 @@ export default {
           bgColor: '#fff8e1'
         },
         {
-          title: 'Edit Rules',
+          title: 'Fee Management',
+          icon: 'fas fa-rupee-sign',
+          description: 'Manage student fee payments',
+          route: '/fee-management',
+          bgColor: '#e0f7fa'
+        },    
+        {
+          title: 'Rules',
           icon: 'fas fa-clipboard-list',
           description: 'Update hostel rules and policies',
           route: '/rules',
@@ -327,7 +321,7 @@ export default {
     logout() {
       console.log("Logging out...")
       this.showDropdown = false
-      this.$router.push('/login')
+      this.$router.push('/')
     },
     navigateTo(route) {
       this.$router.push(route)
