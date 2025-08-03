@@ -1,4 +1,4 @@
-<template>
+ <template>
   <div class="hostel-buddy">
     <div class="hostel-buddy" :class="{'dark-theme': isDarkTheme}">
     <Navbar />
@@ -8,7 +8,7 @@
           <h1>Smart Hostel Management System</h1>
           <p>Streamlining hostel operations for students and administrators</p><br/>
           <div class="auth-buttons">
-            <router-link to="/login" class="cta-button">Get Started -></router-link>
+            <router-link to="/login" class="cta-button">Get Started</router-link>
             <!-- <router-link to="/register" class="cta-button outline">Sign Up</router-link> -->
           </div>
         </div>
@@ -68,7 +68,7 @@
               </p>
             </div>
             <div class="feature-img">
-              <img src=".\assets\images\AnnouncementImg.png" alt="Announcements" />
+              <img src="@/assets/images/AnnouncementImg.png" alt="Announcements" />
             </div>
           </div>
 
